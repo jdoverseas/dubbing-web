@@ -1,98 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JD DUBBER Simulator</title>
-<script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceDub Pro - AI Dubbing Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .progress-bar {
+            width: 0%;
+            transition: width 3s ease-in-out;
+        }
+        
+        .language-flag {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            object-fit: cover;
+        }
+        
+        .wave-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40px;
+        }
+        
+        .wave {
+            width: 4px;
+            height: 20px;
+            background: #4f46e5;
+            margin: 0 3px;
+            border-radius: 10px;
+            animation: wave 1.2s infinite linear;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        
+        .wave:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+        
+        .wave:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes wave {
+            0% { height: 5px; }
+            50% { height: 20px; }
+            100% { height: 5px; }
+        }
+        
+        .glow {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .video-preview {
+            transition: all 0.3s ease;
+        }
+        
+        .video-preview:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 py-10">
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2"><i class="fas fa-microphone-alt mr-3"></i>VoiceDub Pro</h1>
+            <p class="opacity-90">AI-Powered Video Dubbing in Seconds</p>
+        </div>
+        
+        <div class="p-6 md:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column - Upload & Settings -->
+                <div>
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800">Upload Your Video</h2>
+                        
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center video-upload-area hover:border-indigo-400 transition-colors cursor-pointer">
+                            <input type="file" id="videoFile" accept="video/*" class="hidden">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-indigo-500 mb-3"></i>
+                                <p class="font-medium">Drag & drop your video file</p>
+                                <p class="text-gray-500 text-sm mt-1">or</p>
+                                <label for="videoFile" class="mt-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-medium cursor-pointer hover:bg-indigo-200 transition-colors">
+                                    Browse Files
+                                </label>
+                                <p class="text-gray-500 text-xs mt-3">MP4, AVI, MOV (Max 500MB)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 video-preview-container hidden">
+                            <video id="videoPreview" controls class="w-full rounded-lg shadow-md"></video>
+                            <p class="text-sm text-gray-600 mt-2 text-center" id="fileName"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-medium">Original Language</label>
+                            <div class="relative">
+                                <select id="sourceLang" class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white appearance-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                                    <option value="en">English</option>
+                                    <option value="bn">Bangla</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2 font-medium">Target Language</label>
+                            <div class="relative">
+                                <select id="targetLang" class="w-full border border-gray-300 rounded-lg px-4 py-3 bg-white appearance-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500">
+                                    <option value="bn">Bangla</option>
+                                    <option value="hi">Hindi</option>
+                                    <option value="en">English</option>
+                                    <option value="ar">Arabic</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="flex items-center text-gray-700">
+                            <input type="checkbox" id="enhanceAudio" class="rounded text-indigo-600 focus:ring-indigo-500 mr-2">
+                            <span>Enhance audio quality</span>
+                        </label>
+                        
+                        <label class="flex items-center text-gray-700 mt-2">
+                            <input type="checkbox" id="lipSync" class="rounded text-indigo-600 focus:ring-indigo-500 mr-2" checked>
+                            <span>Enable lip-sync technology</span>
+                        </label>
+                    </div>
+                    
+                    <button id="dubBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center pulse">
+                        <i class="fas fa-microphone-alt mr-2"></i> Start Dubbing
+                    </button>
+                </div>
+                
+                <!-- Right Column - Preview & Results -->
+                <div>
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Preview</h2>
+                    
+                    <div class="bg-gray-100 rounded-xl p-4 mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-700 font-medium">Original Video</span>
+                            <span class="text-sm text-gray-500" id="originalLength">0:00</span>
+                        </div>
+                        <div class="h-2 bg-gray-300 rounded-full overflow-hidden">
+                            <div class="bg-indigo-500 h-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Processing Animation -->
+                    <div id="processing" class="hidden">
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 text-center mb-6">
+                            <div class="wave-container mb-4">
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                                <div class="wave"></div>
+                            </div>
+                            <h3 class="font-medium text-gray-800 mb-2">Processing Your Video</h3>
+                            <p class="text-gray-600 text-sm">This may take a few moments...</p>
+                            
+                            <div class="mt-6 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Transcribing audio</span>
+                                    <span class="text-green-600 font-medium" id="status-transcribe">Completed</span>
+                                </div>
+                                <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="progress-bar bg-green-500 h-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Translating text</span>
+                                    <span class="text-green-600 font-medium" id="status-translate">Completed</span>
+                                </div>
+                                <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="progress-bar bg-green-500 h-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Generating voice</span>
+                                    <span class="text-blue-600 font-medium" id="status-voice">In progress...</span>
+                                </div>
+                                <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="progress-bar bg-blue-500 h-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Synchronizing audio</span>
+                                    <span class="text-gray-600 font-medium" id="status-sync">Pending</span>
+                                </div>
+                                <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="progress-bar bg-gray-300 h-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Result -->
+                    <div id="result" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center mb-6 glow">
+                            <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
+                            <h3 class="font-semibold text-gray-800 mb-2">Dubbing Complete!</h3>
+                            <p class="text-gray-600">Your video has been successfully dubbed</p>
+                            
+                            <div class="mt-6">
+                                <audio id="dubbedAudio" controls class="w-full mb-4"></audio>
+                                
+                                <div class="flex space-x-3">
+                                    <a id="downloadBtn" href="#" class="flex-1 bg-green-600 text-white font-medium py-2.5 rounded-lg hover:bg-green-700 transition-colors">
+                                        <i class="fas fa-download mr-2"></i> Download
+                                    </a>
+                                    <button id="newDubBtn" class="flex-1 bg-gray-200 text-gray-800 font-medium py-2.5 rounded-lg hover:bg-gray-300 transition-colors">
+                                        <i class="fas fa-redo mr-2"></i> New Dub
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border border-gray-200 rounded-xl p-4">
+                            <h3 class="font-medium text-gray-800 mb-3">Dubbing Details</h3>
+                            
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Original language:</span>
+                                    <span class="font-medium" id="detailOriginalLang">English</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Target language:</span>
+                                    <span class="font-medium" id="detailTargetLang">Bangla</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Video duration:</span>
+                                    <span class="font-medium" id="detailDuration">0:25</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Processing time:</span>
+                                    <span class="font-medium" id="detailProcessTime">7.2 seconds</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Initial Placeholder -->
+                    <div id="preview-placeholder" class="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                        <i class="fas fa-film text-3xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500">Your dubbed video will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="bg-gray-50 border-t border-gray-200 p-6 md:p-8">
+            <h2 class="text-xl font-semibold text-center mb-6 text-gray-800">Why Choose VoiceDub Pro?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bolt text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Fast Processing</h3>
+                    <p class="text-gray-600 text-sm">Dub 1 hour of video in less than 10 minutes</p>
+                </div>
+                
+                <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-language text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">50+ Languages</h3>
+                    <p class="text-gray-600 text-sm">Support for languages from around the world</p>
+                </div>
+                
+                <div class="bg-white p-5 rounded-lg shadow-sm text-center">
+                    <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sync-alt text-indigo-600 text-xl"></i>
+                    </div>
+                    <h3 class="font-semibold mb-2">Lip Synchronization</h3>
+                    <p class="text-gray-600 text-sm">Advanced AI matches voice to lip movements</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-  <h1 class="text-2xl font-bold mb-4 text-center">JD DUBBER Simulator</h1>
-  <p class="text-gray-600 mb-6 text-center">Upload a video and simulate dubbing in multiple languages.</p>
-
-  <!-- Video Upload -->
-  <div class="mb-4">
-    <label class="block text-gray-700 mb-1">Select Video:</label>
-    <input id="videoFile" type="file" accept="video/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-        file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
-  </div>
-
-  <!-- Source Language -->
-  <div class="mb-4">
-    <label class="block text-gray-700 mb-1">Source Language:</label>
-    <select id="sourceLang" class="w-full border border-gray-300 rounded px-3 py-2">
-      <option>Bangla</option>
-      <option>Hindi</option>
-      <option>English</option>
-      <option>Arabic</option>
-    </select>
-  </div>
-
-  <!-- Target Language -->
-  <div class="mb-4">
-    <label class="block text-gray-700 mb-1">Target Language:</label>
-    <select id="targetLang" class="w-full border border-gray-300 rounded px-3 py-2">
-      <option>Bangla</option>
-      <option>Hindi</option>
-      <option>English</option>
-      <option>Arabic</option>
-    </select>
-  </div>
-
-  <!-- Dub Button -->
-  <button id="dubBtn" class="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition-colors">
-      Dub
-  </button>
-
-  <!-- Loading Animation -->
-  <div id="loading" class="mt-4 hidden text-center">
-    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-    <p class="text-gray-600">Processing...</p>
-  </div>
-
-  <!-- Success Message -->
-  <div id="success" class="mt-4 hidden text-center">
-    <p class="text-green-600 font-semibold mb-2">✅ Dubbing complete!</p>
-    <a id="downloadLink" href="#" download class="text-blue-600 underline">Download Dubbed Video</a>
-  </div>
-</div>
-
-<script>
-const dubBtn = document.getElementById("dubBtn");
-const videoFileInput = document.getElementById("videoFile");
-const sourceLang = document.getElementById("sourceLang");
-const targetLang = document.getElementById("targetLang");
-const loadingDiv = document.getElementById("loading");
-const successDiv = document.getElementById("success");
-const downloadLink = document.getElementById("downloadLink");
-
-dubBtn.addEventListener("click", () => {
-    const file = videoFileInput.files[0];
-    if(!file) { alert("Please select a video file first."); return; }
-
-    loadingDiv.classList.remove("hidden");
-    successDiv.classList.add("hidden");
-
-    // Simulate real dubbing process
-    setTimeout(() => {
-        loadingDiv.classList.add("hidden");
-        successDiv.classList.remove("hidden");
-
-        // Create downloadable "dubbed" video URL
-        const url = URL.createObjectURL(file);
-        downloadLink.href = url;
-        downloadLink.download = `dubbed_${file.name}`;
-
-        // Optional: Show alert with selected languages
-        console.log(`Source: ${sourceLang.value}, Target: ${targetLang.value}`);
-    }, 5000); // 5 seconds simulation
-});
-</script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoFileInput = document.getElementById('videoFile');
+            const videoUploadArea = document.querySelector('.video-upload-area');
+            const videoPreviewContainer = document.querySelector('.video-preview-container');
+            const videoPreview = document.getElementById('videoPreview');
+            const fileName = document.getElementById('fileName');
+            const sourceLang = document.getElementById('sourceLang');
+            const targetLang = document.getElementById('targetLang');
+            const dubBtn = document.getElementById('dubBtn');
+            const processingDiv = document.getElementById('processing');
+            const resultDiv = document.getElementById('result');
+            const previewPlaceholder = document.getElementById('preview-placeholder');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const newDubBtn = document.getElementById('newDubBtn');
+            const dubbedAudio = document.getElementById('dubbedAudio');
+            const originalLength = document.getElementById('originalLength');
+            
+            // Details elements
+            const detailOriginalLang = document.getElementById('detailOriginalLang');
+            const detailTargetLang = document.getElementById('detailTargetLang');
+            const detailDuration = document.getElementById('detailDuration');
+            const detailProcessTime = document.getElementById('detailProcessTime');
+            
+            // Drag and drop functionality
+            videoUploadArea.addEventListener('click', () => {
+                videoFileInput.click();
+            });
+            
+            videoUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                videoUploadArea.classList.add('border-indigo-400', 'bg-indigo-50');
+            });
+            
+            videoUploadArea.addEventListener('dragleave', () => {
+                videoUploadArea.classList.remove('border-indigo-400', 'bg-indigo-50');
+            });
+            
+            videoUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                videoUploadArea.classList.remove('border-indigo-400', 'bg-indigo-50');
+                
+                if (e.dataTransfer.files.length) {
+                    videoFileInput.files = e.dataTransfer.files;
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+            
+            videoFileInput.addEventListener('change', () => {
+                if (videoFileInput.files.length) {
+                    handleFileSelection(videoFileInput.files[0]);
+                }
+            });
+            
+            function handleFileSelection(file) {
+                if (!file.type.startsWith('video/')) {
+                    alert('Please select a video file.');
+                    return;
+                }
+                
+                // Show file name
+                fileName.textContent = file.name;
+                
+                // Create preview
+                const videoURL = URL.createObjectURL(file);
+                videoPreview.src = videoURL;
+                videoPreviewContainer.classList.remove('hidden');
+                
+                // Set a random duration for demo purposes (between 10 and 120 seconds)
+                const duration = Math.floor(Math.random() * 110) + 10;
+                const minutes = Math.floor(duration / 60);
+                const seconds = duration % 60;
+                originalLength.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Update details
+                detailDuration.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Dub button click handler
+            dubBtn.addEventListener('click', () => {
+                if (!videoFileInput.files.length) {
+                    alert('Please select a video file first.');
+                    return;
+                }
+                
+                // Get selected languages
+                const sourceLangText = sourceLang.options[sourceLang.selectedIndex].text;
+                const targetLangText = targetLang.options[targetLang.selectedIndex].text;
+                
+                // Update details
+                detailOriginalLang.textContent = sourceLangText;
+                detailTargetLang.textContent = targetLangText;
+                
+                // Show processing animation
+                processingDiv.classList.remove('hidden');
+                resultDiv.classList.add('hidden');
+                previewPlaceholder.classList.add('hidden');
+                dubBtn.disabled = true;
+                
+                // Simulate processing steps
+                setTimeout(() => {
+                    document.getElementById('status-voice').textContent = 'Completed';
+                    document.querySelector('#status-voice').parentElement.nextElementSibling.querySelector('.progress-bar').style.width = '100%';
+                    document.getElementById('status-sync').textContent = 'In progress...';
+                    document.getElementById('status-sync').className = 'text-blue-600 font-medium';
+                    
+                    setTimeout(() => {
+                        document.getElementById('status-sync').textContent = 'Completed';
+                        document.querySelector('#status-sync').parentElement.nextElementSibling.querySelector('.progress-bar').style.width = '100%';
+                        document.getElementById('status-sync').className = 'text-green-600 font-medium';
+                        
+                        // Show result
+                        setTimeout(() => {
+                            processingDiv.classList.add('hidden');
+                            resultDiv.classList.remove('hidden');
+                            
+                            // Generate a random process time between 3 and 15 seconds
+                            const processTime = (Math.random() * 12 + 3).toFixed(1);
+                            detailProcessTime.textContent = `${processTime} seconds`;
+                            
+                            // Set a sample audio for preview (using a free audio sample)
+                            dubbedAudio.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+                            
+                            // Set download link
+                            const videoURL = URL.createObjectURL(videoFileInput.files[0]);
+                            downloadBtn.href = videoURL;
+                            downloadBtn.download = `dubbed_${videoFileInput.files[0].name}`;
+                            
+                            dubBtn.disabled = false;
+                        }, 1000);
+                    }, 2000);
+                }, 3000);
+            });
+            
+            // New Dub button
+            newDubBtn.addEventListener('click', () => {
+                resultDiv.classList.add('hidden');
+                previewPlaceholder.classList.remove('hidden');
+            });
+        });
+    </script>
 </body>
 </html>
