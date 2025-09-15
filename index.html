@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JD DUBBER Simulator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+<div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+  <h1 class="text-2xl font-bold mb-4 text-center">JD DUBBER Simulator</h1>
+  <p class="text-gray-600 mb-6 text-center">Upload a video and simulate dubbing in multiple languages.</p>
+
+  <!-- Video Upload -->
+  <div class="mb-4">
+    <label class="block text-gray-700 mb-1">Select Video:</label>
+    <input id="videoFile" type="file" accept="video/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+        file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200" />
+  </div>
+
+  <!-- Source Language -->
+  <div class="mb-4">
+    <label class="block text-gray-700 mb-1">Source Language:</label>
+    <select id="sourceLang" class="w-full border border-gray-300 rounded px-3 py-2">
+      <option>Bangla</option>
+      <option>Hindi</option>
+      <option>English</option>
+      <option>Arabic</option>
+    </select>
+  </div>
+
+  <!-- Target Language -->
+  <div class="mb-4">
+    <label class="block text-gray-700 mb-1">Target Language:</label>
+    <select id="targetLang" class="w-full border border-gray-300 rounded px-3 py-2">
+      <option>Bangla</option>
+      <option>Hindi</option>
+      <option>English</option>
+      <option>Arabic</option>
+    </select>
+  </div>
+
+  <!-- Dub Button -->
+  <button id="dubBtn" class="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition-colors">
+      Dub
+  </button>
+
+  <!-- Loading Animation -->
+  <div id="loading" class="mt-4 hidden text-center">
+    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-gray-600">Processing...</p>
+  </div>
+
+  <!-- Success Message -->
+  <div id="success" class="mt-4 hidden text-center">
+    <p class="text-green-600 font-semibold mb-2">✅ Dubbing complete!</p>
+    <a id="downloadLink" href="#" download class="text-blue-600 underline">Download Dubbed Video</a>
+  </div>
+</div>
+
+<script>
+const dubBtn = document.getElementById("dubBtn");
+const videoFileInput = document.getElementById("videoFile");
+const sourceLang = document.getElementById("sourceLang");
+const targetLang = document.getElementById("targetLang");
+const loadingDiv = document.getElementById("loading");
+const successDiv = document.getElementById("success");
+const downloadLink = document.getElementById("downloadLink");
+
+dubBtn.addEventListener("click", () => {
+    const file = videoFileInput.files[0];
+    if(!file) { alert("Please select a video file first."); return; }
+
+    loadingDiv.classList.remove("hidden");
+    successDiv.classList.add("hidden");
+
+    // Simulate real dubbing process
+    setTimeout(() => {
+        loadingDiv.classList.add("hidden");
+        successDiv.classList.remove("hidden");
+
+        // Create downloadable "dubbed" video URL
+        const url = URL.createObjectURL(file);
+        downloadLink.href = url;
+        downloadLink.download = `dubbed_${file.name}`;
+
+        // Optional: Show alert with selected languages
+        console.log(`Source: ${sourceLang.value}, Target: ${targetLang.value}`);
+    }, 5000); // 5 seconds simulation
+});
+</script>
+
+</body>
+</html>
